@@ -1,0 +1,6 @@
+export enum MatingSuccess {
+  SUCCESSFUL = 'SUCCESSFUL',
+  ATTEMPTED = 'ATTEMPTED',
+  REJECTED = 'REJECTED',
+  IN_PROGRESS = 'IN_PROGRESS',
+}

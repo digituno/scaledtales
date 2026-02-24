@@ -1,0 +1,63 @@
+name: scaledtales_mobile
+description: "파충류/양서류 사육 관리 앱"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # State Management
+  flutter_riverpod: ^2.4.0
+  riverpod_annotation: ^2.3.0
+  freezed_annotation: ^2.4.1
+
+  # HTTP
+  dio: ^5.4.0
+
+  # Supabase
+  supabase_flutter: ^2.0.0
+
+  # Image
+  image_picker: ^1.0.0
+  flutter_image_compress: ^2.1.0
+
+  # Chart
+  fl_chart: ^0.66.0
+
+  # Localization
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.19.0
+
+  # Secure Storage
+  flutter_secure_storage: ^9.0.0
+
+  # Preferences
+  shared_preferences: ^2.2.0
+
+  # Cached Image
+  cached_network_image: ^3.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^4.0.0
+
+  # Code Generation
+  build_runner: ^2.4.0
+  riverpod_generator: ^2.3.0
+  freezed: ^2.5.2
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/images/

@@ -1,0 +1,14 @@
+export { Sex } from './sex.enum';
+export { OriginType } from './origin-type.enum';
+export { AcquisitionSource } from './acquisition-source.enum';
+export { AnimalStatus } from './animal-status.enum';
+export { LogType } from './log-type.enum';
+export { FoodType } from './food-type.enum';
+export { Unit } from './unit.enum';
+export { FeedingResponse } from './feeding-response.enum';
+export { FeedingMethod } from './feeding-method.enum';
+export { ShedCompletion } from './shed-completion.enum';
+export { FecesConsistency } from './feces-consistency.enum';
+export { UrateCondition } from './urate-condition.enum';
+export { MatingSuccess } from './mating-success.enum';
+export { IncubationMethod } from './incubation-method.enum';
