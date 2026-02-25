@@ -12,3 +12,4 @@ export 'feces_consistency.dart';
 export 'urate_condition.dart';
 export 'mating_success.dart';
 export 'incubation_method.dart';
+export 'user_role.dart';

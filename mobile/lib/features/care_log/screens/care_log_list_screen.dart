@@ -7,6 +7,7 @@ import '../../../core/widgets/widgets.dart';
 import '../models/care_log_model.dart';
 import '../providers/care_log_provider.dart';
 import '../widgets/care_log_card.dart';
+import '../../auth/providers/user_profile_provider.dart';
 import 'care_log_form_screen.dart';
 
 class CareLogListScreen extends ConsumerStatefulWidget {
@@ -23,14 +24,17 @@ class _CareLogListScreenState extends ConsumerState<CareLogListScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final careLogsAsync = ref.watch(allCareLogsProvider);
+    final canWrite = ref.watch(userRoleProvider).canWrite;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.careLogs)),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'careLogListFab',
-        onPressed: () => _openForm(context),
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: canWrite
+          ? FloatingActionButton(
+              heroTag: 'careLogListFab',
+              onPressed: () => _openForm(context),
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: AsyncValueWidget(
         value: careLogsAsync,
         onRetry: () => ref.invalidate(allCareLogsProvider),
@@ -40,14 +44,16 @@ class _CareLogListScreenState extends ConsumerState<CareLogListScreen> {
               icon: Icons.event_note,
               title: l10n.emptyLogs,
               subtitle: l10n.emptyLogsAction,
-              action: FilledButton.icon(
-                onPressed: () => _openForm(context),
-                icon: const Icon(Icons.add),
-                label: Text(l10n.addCareLog),
-              ),
+              action: canWrite
+                  ? FilledButton.icon(
+                      onPressed: () => _openForm(context),
+                      icon: const Icon(Icons.add),
+                      label: Text(l10n.addCareLog),
+                    )
+                  : null,
             );
           }
-          return _buildContent(context, l10n, careLogs);
+          return _buildContent(context, l10n, careLogs, canWrite);
         },
       ),
     );
@@ -57,6 +63,7 @@ class _CareLogListScreenState extends ConsumerState<CareLogListScreen> {
     BuildContext context,
     AppLocalizations l10n,
     List<CareLog> careLogs,
+    bool canWrite,
   ) {
     final filtered = _selectedType != null
         ? careLogs.where((c) => c.logType == _selectedType!.value).toList()
@@ -108,8 +115,12 @@ class _CareLogListScreenState extends ConsumerState<CareLogListScreen> {
                       return CareLogCard(
                         careLog: careLog,
                         showAnimalName: true,
-                        onEdit: () => _openForm(context, careLog: careLog),
-                        onDelete: () => _confirmDelete(context, l10n, careLog),
+                        onEdit: canWrite
+                            ? () => _openForm(context, careLog: careLog)
+                            : null,
+                        onDelete: canWrite
+                            ? () => _confirmDelete(context, l10n, careLog)
+                            : null,
                       );
                     },
                   ),

@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../core/enums/enums.dart';
 import '../models/animal_model.dart';
 import '../providers/animal_provider.dart';
+import '../../auth/providers/user_profile_provider.dart';
 import 'animal_edit_screen.dart';
 import '../../measurement/widgets/measurement_tab.dart';
 import '../../care_log/widgets/care_log_tab.dart';
@@ -60,6 +61,7 @@ class _AnimalDetailView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final canWrite = ref.watch(userRoleProvider).canWrite;
 
     return Scaffold(
       body: DefaultTabController(
@@ -75,51 +77,52 @@ class _AnimalDetailView extends ConsumerWidget {
                   background: _HeroSection(animal: animal),
                 ),
                 actions: [
-                  PopupMenuButton<String>(
-                    onSelected: (value) async {
-                      if (value == 'edit') {
-                        final result =
-                            await Navigator.of(context).push<bool>(
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                AnimalEditScreen(animal: animal),
-                          ),
-                        );
-                        if (result == true) {
-                          ref.invalidate(animalDetailProvider(animalId));
-                          ref.read(animalListProvider.notifier).refresh();
+                  if (canWrite)
+                    PopupMenuButton<String>(
+                      onSelected: (value) async {
+                        if (value == 'edit') {
+                          final result =
+                              await Navigator.of(context).push<bool>(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  AnimalEditScreen(animal: animal),
+                            ),
+                          );
+                          if (result == true) {
+                            ref.invalidate(animalDetailProvider(animalId));
+                            ref.read(animalListProvider.notifier).refresh();
+                          }
+                        } else if (value == 'delete') {
+                          _confirmDelete(context, ref, l10n);
                         }
-                      } else if (value == 'delete') {
-                        _confirmDelete(context, ref, l10n);
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.edit),
-                            const SizedBox(width: 8),
-                            Text(l10n.editAnimal),
-                          ],
+                      },
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 'edit',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.edit),
+                              const SizedBox(width: 8),
+                              Text(l10n.editAnimal),
+                            ],
+                          ),
                         ),
-                      ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete,
-                                color: Theme.of(context).colorScheme.error),
-                            const SizedBox(width: 8),
-                            Text(l10n.deleteAnimal,
-                                style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.error)),
-                          ],
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete,
+                                  color: Theme.of(context).colorScheme.error),
+                              const SizedBox(width: 8),
+                              Text(l10n.deleteAnimal,
+                                  style: TextStyle(
+                                      color:
+                                          Theme.of(context).colorScheme.error)),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                 ],
               ),
               SliverPersistentHeader(

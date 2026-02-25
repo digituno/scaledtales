@@ -6,6 +6,7 @@ import '../../../core/widgets/widgets.dart';
 import '../models/measurement_model.dart';
 import '../providers/measurement_provider.dart';
 import '../screens/measurement_form_screen.dart';
+import '../../auth/providers/user_profile_provider.dart';
 import 'growth_chart.dart';
 
 enum ChartPeriod { month1, month3, month6, year1, all }
@@ -27,6 +28,7 @@ class _MeasurementTabState extends ConsumerState<MeasurementTab> {
     final l10n = AppLocalizations.of(context)!;
     final measurementsAsync =
         ref.watch(measurementListProvider(widget.animalId));
+    final canWrite = ref.watch(userRoleProvider).canWrite;
 
     return AsyncValueWidget(
       value: measurementsAsync,
@@ -37,14 +39,16 @@ class _MeasurementTabState extends ConsumerState<MeasurementTab> {
             icon: Icons.straighten,
             title: l10n.emptyMeasurements,
             subtitle: l10n.emptyMeasurementsAction,
-            action: FilledButton.icon(
-              onPressed: () => _openForm(context),
-              icon: const Icon(Icons.add),
-              label: Text(l10n.addMeasurement),
-            ),
+            action: canWrite
+                ? FilledButton.icon(
+                    onPressed: () => _openForm(context),
+                    icon: const Icon(Icons.add),
+                    label: Text(l10n.addMeasurement),
+                  )
+                : null,
           );
         }
-        return _buildContent(context, l10n, measurements);
+        return _buildContent(context, l10n, measurements, canWrite);
       },
     );
   }
@@ -53,6 +57,7 @@ class _MeasurementTabState extends ConsumerState<MeasurementTab> {
     BuildContext context,
     AppLocalizations l10n,
     List<MeasurementLog> measurements,
+    bool canWrite,
   ) {
     final filtered = _filterByPeriod(measurements);
 
@@ -60,14 +65,15 @@ class _MeasurementTabState extends ConsumerState<MeasurementTab> {
       padding: const EdgeInsets.all(16),
       children: [
         // Add button
-        Align(
-          alignment: Alignment.centerRight,
-          child: FilledButton.icon(
-            onPressed: () => _openForm(context),
-            icon: const Icon(Icons.add),
-            label: Text(l10n.addMeasurement),
+        if (canWrite)
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton.icon(
+              onPressed: () => _openForm(context),
+              icon: const Icon(Icons.add),
+              label: Text(l10n.addMeasurement),
+            ),
           ),
-        ),
         const SizedBox(height: 12),
 
         // Period filter chips
@@ -118,7 +124,7 @@ class _MeasurementTabState extends ConsumerState<MeasurementTab> {
               ?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-        ...measurements.map((m) => _buildHistoryCard(context, l10n, m)),
+        ...measurements.map((m) => _buildHistoryCard(context, l10n, m, canWrite)),
       ],
     );
   }
@@ -153,6 +159,7 @@ class _MeasurementTabState extends ConsumerState<MeasurementTab> {
     BuildContext context,
     AppLocalizations l10n,
     MeasurementLog m,
+    bool canWrite,
   ) {
     return Card(
       child: ListTile(
@@ -162,29 +169,31 @@ class _MeasurementTabState extends ConsumerState<MeasurementTab> {
           if (m.length != null) '${l10n.length}: ${m.length!.toStringAsFixed(1)}cm',
           if (m.notes != null && m.notes!.isNotEmpty) m.notes!,
         ].join('  ')),
-        trailing: PopupMenuButton<String>(
-          onSelected: (value) async {
-            if (value == 'edit') {
-              final result = await Navigator.of(context).push<bool>(
-                MaterialPageRoute(
-                  builder: (_) => MeasurementFormScreen(
-                    animalId: widget.animalId,
-                    measurement: m,
-                  ),
-                ),
-              );
-              if (result == true) {
-                ref.invalidate(measurementListProvider(widget.animalId));
-              }
-            } else if (value == 'delete') {
-              _confirmDelete(context, l10n, m);
-            }
-          },
-          itemBuilder: (context) => [
-            PopupMenuItem(value: 'edit', child: Text(l10n.edit)),
-            PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
-          ],
-        ),
+        trailing: canWrite
+            ? PopupMenuButton<String>(
+                onSelected: (value) async {
+                  if (value == 'edit') {
+                    final result = await Navigator.of(context).push<bool>(
+                      MaterialPageRoute(
+                        builder: (_) => MeasurementFormScreen(
+                          animalId: widget.animalId,
+                          measurement: m,
+                        ),
+                      ),
+                    );
+                    if (result == true) {
+                      ref.invalidate(measurementListProvider(widget.animalId));
+                    }
+                  } else if (value == 'delete') {
+                    _confirmDelete(context, l10n, m);
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(value: 'edit', child: Text(l10n.edit)),
+                  PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
+                ],
+              )
+            : null,
       ),
     );
   }

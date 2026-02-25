@@ -7,6 +7,7 @@ import '../../../core/widgets/widgets.dart';
 import '../models/care_log_model.dart';
 import '../providers/care_log_provider.dart';
 import '../screens/care_log_form_screen.dart';
+import '../../auth/providers/user_profile_provider.dart';
 import 'care_log_card.dart';
 
 class CareLogTab extends ConsumerStatefulWidget {
@@ -25,6 +26,7 @@ class _CareLogTabState extends ConsumerState<CareLogTab> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final careLogsAsync = ref.watch(careLogListProvider(widget.animalId));
+    final canWrite = ref.watch(userRoleProvider).canWrite;
 
     return AsyncValueWidget(
       value: careLogsAsync,
@@ -35,14 +37,16 @@ class _CareLogTabState extends ConsumerState<CareLogTab> {
             icon: Icons.event_note,
             title: l10n.emptyLogs,
             subtitle: l10n.emptyLogsAction,
-            action: FilledButton.icon(
-              onPressed: () => _openForm(context),
-              icon: const Icon(Icons.add),
-              label: Text(l10n.addCareLog),
-            ),
+            action: canWrite
+                ? FilledButton.icon(
+                    onPressed: () => _openForm(context),
+                    icon: const Icon(Icons.add),
+                    label: Text(l10n.addCareLog),
+                  )
+                : null,
           );
         }
-        return _buildContent(context, l10n, careLogs);
+        return _buildContent(context, l10n, careLogs, canWrite);
       },
     );
   }
@@ -51,6 +55,7 @@ class _CareLogTabState extends ConsumerState<CareLogTab> {
     BuildContext context,
     AppLocalizations l10n,
     List<CareLog> careLogs,
+    bool canWrite,
   ) {
     final filtered = _selectedType != null
         ? careLogs.where((c) => c.logType == _selectedType!.value).toList()
@@ -60,14 +65,15 @@ class _CareLogTabState extends ConsumerState<CareLogTab> {
       padding: const EdgeInsets.all(16),
       children: [
         // Add button
-        Align(
-          alignment: Alignment.centerRight,
-          child: FilledButton.icon(
-            onPressed: () => _openForm(context),
-            icon: const Icon(Icons.add),
-            label: Text(l10n.addCareLog),
+        if (canWrite)
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton.icon(
+              onPressed: () => _openForm(context),
+              icon: const Icon(Icons.add),
+              label: Text(l10n.addCareLog),
+            ),
           ),
-        ),
         const SizedBox(height: 12),
 
         // Log type filter chips
@@ -108,8 +114,12 @@ class _CareLogTabState extends ConsumerState<CareLogTab> {
           ...filtered.map(
             (careLog) => CareLogCard(
               careLog: careLog,
-              onEdit: () => _openForm(context, careLog: careLog),
-              onDelete: () => _confirmDelete(context, l10n, careLog),
+              onEdit: canWrite
+                  ? () => _openForm(context, careLog: careLog)
+                  : null,
+              onDelete: canWrite
+                  ? () => _confirmDelete(context, l10n, careLog)
+                  : null,
             ),
           ),
       ],

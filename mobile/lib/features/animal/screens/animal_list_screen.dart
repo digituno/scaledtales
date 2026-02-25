@@ -7,6 +7,7 @@ import '../../../core/enums/enums.dart';
 import '../../../core/widgets/widgets.dart';
 import '../models/animal_model.dart';
 import '../providers/animal_provider.dart';
+import '../../auth/providers/user_profile_provider.dart';
 import 'animal_create_screen.dart';
 import 'animal_detail_screen.dart';
 
@@ -17,6 +18,7 @@ class AnimalListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final animalsAsync = ref.watch(animalListProvider);
+    final canWrite = ref.watch(userRoleProvider).canWrite;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.myAnimals)),
@@ -29,11 +31,13 @@ class AnimalListScreen extends ConsumerWidget {
               icon: Icons.pets,
               title: l10n.emptyAnimals,
               subtitle: l10n.emptyAnimalsAction,
-              action: FilledButton.icon(
-                onPressed: () => _navigateToCreate(context, ref),
-                icon: const Icon(Icons.add),
-                label: Text(l10n.addAnimal),
-              ),
+              action: canWrite
+                  ? FilledButton.icon(
+                      onPressed: () => _navigateToCreate(context, ref),
+                      icon: const Icon(Icons.add),
+                      label: Text(l10n.addAnimal),
+                    )
+                  : null,
             );
           }
 
@@ -57,11 +61,13 @@ class AnimalListScreen extends ConsumerWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'animalListFab',
-        onPressed: () => _navigateToCreate(context, ref),
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: canWrite
+          ? FloatingActionButton(
+              heroTag: 'animalListFab',
+              onPressed: () => _navigateToCreate(context, ref),
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 
