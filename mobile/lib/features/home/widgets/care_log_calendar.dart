@@ -280,35 +280,27 @@ class _CareLogCalendarState extends State<CareLogCalendar> {
     required DateTime? cellDate,
   }) {
     final hasLogs = logsForDay.isNotEmpty;
-    final hasMore = logsForDay.length > 1;
 
-    // 로그 인디케이터 (색상 원 + "+" 마크)
+    // 로그 인디케이터: 최대 3개 원, 각 로그의 LogType 색상으로 표시
     Widget indicator = const SizedBox(height: 9);
     if (hasLogs) {
-      final repColor =
-          _logTypeColor(LogType.fromValue(logsForDay.first.logType));
+      final displayLogs = logsForDay.take(3).toList();
       indicator = Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 7,
-            height: 7,
-            decoration: BoxDecoration(
-              color: repColor,
-              shape: BoxShape.circle,
-            ),
-          ),
-          if (hasMore)
-            Text(
-              '+',
-              style: TextStyle(
-                fontSize: 8,
-                color: repColor,
-                fontWeight: FontWeight.bold,
-                height: 1.2,
+          for (int i = 0; i < displayLogs.length; i++) ...[
+            if (i > 0) const SizedBox(width: 2),
+            Container(
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(
+                color: _logTypeColor(
+                    LogType.fromValue(displayLogs[i].logType)),
+                shape: BoxShape.circle,
               ),
             ),
+          ],
         ],
       );
     }
