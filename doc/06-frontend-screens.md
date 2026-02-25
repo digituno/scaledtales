@@ -964,6 +964,34 @@ ref.invalidate(allCareLogsProvider); // 전체 탭도 갱신
 await DioClient().dio.post(ApiConstants.careLogs(animalId), data: data);
 ```
 
+### Role 기반 접근 제어 패턴
+
+`userRoleProvider`를 통해 현재 사용자의 role을 구독하고, `canWrite` getter로 쓰기 권한을 판별한다.
+
+```dart
+// 위젯 build() 내 권한 체크
+final canWrite = ref.watch(userRoleProvider).canWrite;
+
+// FAB 조건부 표시
+floatingActionButton: canWrite
+    ? FloatingActionButton(onPressed: ..., child: Icon(Icons.add))
+    : null,
+
+// 버튼 조건부 표시
+if (canWrite) FilledButton.icon(onPressed: ..., label: Text('추가')),
+
+// CareLogCard 수정/삭제 콜백
+CareLogCard(
+  onEdit: canWrite ? () => _openForm(context, careLog: log) : null,
+  onDelete: canWrite ? () => _confirmDelete(context, log) : null,
+),
+```
+
+**적용 규칙:**
+- `suspended` role: `canWrite = false` → 모든 생성·수정·삭제 버튼 비노출
+- 나머지 role(`admin`, `seller`, `pro_breeder`, `user`): `canWrite = true` → 전체 기능 접근
+- `userRoleProvider`는 로딩/오류 시 안전 기본값 `UserRole.user` 반환 (앱 정상 동작 보장)
+
 ---
 
 ## 네비게이션 플로우 다이어그램
@@ -1032,6 +1060,6 @@ await DioClient().dio.post(ApiConstants.careLogs(animalId), data: data);
 
 ---
 
-**문서 버전**: 1.1
-**최종 수정일**: 2026-02-24
+**문서 버전**: 1.2
+**최종 수정일**: 2026-02-25
 **작성자**: 비늘꼬리 & 게코

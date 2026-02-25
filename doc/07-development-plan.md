@@ -34,6 +34,7 @@ ScaledTales MVP는 **12주+ (약 3개월)** 동안 개발됩니다.
 | Week 10 | 품질 강화 | 단위 테스트(82개) + CORS/환경변수 | ✅ `npm test` 82개 통과 |
 | Week 11 | 아키텍처 정비 | Provider CRUD 통일 + ApiConstants 정비 | ✅ `dart analyze` 0 issues |
 | Week 12 | 리팩터링 완성 | Form 상태 분리 + Freezed 도입 | ✅ `dart analyze` 0 issues |
+| Week 13 | Role 시스템 | 사용자 역할 도입 + 권한 기반 UI | ✅ suspended role 쓰기 버튼 비노출 |
 
 ---
 
@@ -1278,6 +1279,64 @@ class _MeasurementFormScreenState extends ConsumerState<MeasurementFormScreen> {
 
 ---
 
+## Week 13: 사용자 Role 시스템
+
+**목표:** Supabase Auth 기반 사용자별 역할 부여 + 기존 네비게이션 구조 유지하면서 권한 기반 UI 제어
+
+### 역할 정의
+
+| Role | 설명 | 권한 |
+|------|------|------|
+| `admin` | 관리자 | 전체 기능 |
+| `seller` | 판매업체 | 전체 기능 |
+| `pro_breeder` | 전문브리더 | 전체 기능 |
+| `user` | 일반사육자 | 전체 기능 |
+| `suspended` | 탈퇴/정지 | 조회만 (생성·수정·삭제 버튼 비노출) |
+
+### DB 마이그레이션
+
+```sql
+CREATE TABLE user_profile (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  role VARCHAR(20) NOT NULL DEFAULT 'user',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT chk_role CHECK (role IN ('admin','seller','pro_breeder','user','suspended'))
+);
+ALTER TABLE user_profile ENABLE ROW LEVEL SECURITY;
+-- 신규 가입 시 자동 생성 트리거 (SECURITY DEFINER)
+CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+```
+
+### 백엔드
+
+- `auth.service.ts`: `getUserById()` 에서 `user_profile` 테이블 role 조회
+- `auth/dto/user-me-response.dto.ts`: role 포함 응답 DTO
+- `GET /v1/auth/me` 응답: `{ id, email, role, created_at }`
+
+### 프론트엔드
+
+신규 파일:
+- `core/enums/user_role.dart`: `UserRole` enum + `canWrite` getter (suspended → false)
+- `features/auth/models/user_profile.dart`: `UserProfile` 모델
+- `features/auth/providers/user_profile_provider.dart`: `userProfileProvider` + `userRoleProvider`
+
+수정 파일 (권한 적용):
+- `animal_list_screen.dart`: FAB + EmptyState 버튼 `canWrite` 조건부
+- `animal_detail_screen.dart`: 수정/삭제 PopupMenuButton `canWrite` 조건부
+- `care_log_list_screen.dart`: FAB + EmptyState + CareLogCard 수정/삭제 조건부
+- `care_log_tab.dart`: 추가 버튼 + CareLogCard 수정/삭제 조건부
+- `measurement_tab.dart`: EmptyState + 추가 버튼 + 히스토리 팝업메뉴 조건부
+
+**Week 13 완료 기준:**
+- ✅ `user_profile` 테이블 생성 + 기존 사용자 백필
+- ✅ `GET /auth/me` 응답에 `role` 포함
+- ✅ `dart analyze` 0 issues
+- ✅ `suspended` role: 생성·수정·삭제 UI 완전 비노출
+
+---
+
 ## 일정 조정 가이드
 
 ### 빠른 MVP (6주)
@@ -1316,6 +1375,6 @@ class _MeasurementFormScreenState extends ConsumerState<MeasurementFormScreen> {
 
 ---
 
-**문서 버전**: 1.2
-**최종 수정일**: 2026-02-24
+**문서 버전**: 1.3
+**최종 수정일**: 2026-02-25
 **작성자**: 비늘꼬리 & 게코
