@@ -50,6 +50,9 @@ class _DefecationDetailsFormState extends State<DefecationDetailsForm> {
     _abnormalitiesController = TextEditingController(
       text: d?['abnormalities'] as String? ?? '',
     );
+
+    // 초기 기본값을 부모에게 emit (사용자가 아무것도 건드리지 않아도 _details에 반영)
+    WidgetsBinding.instance.addPostFrameCallback((_) => _emitChange());
   }
 
   @override
