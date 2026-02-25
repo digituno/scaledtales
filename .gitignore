@@ -16,6 +16,9 @@ build/
 # MCP (contains access tokens)
 .mcp.json
 
+# Claude Code local config (device-specific)
+.claude/
+
 # IDE
 .idea/
 .vscode/
