@@ -262,7 +262,7 @@ class _SpeciesSelectorScreenState
                       border: Border.all(color: Colors.green.shade200),
                     ),
                     child: Text(
-                      '합법',
+                      AppLocalizations.of(context)!.whitelist,
                       style: TextStyle(
                         fontSize: 10,
                         color: Colors.green.shade700,

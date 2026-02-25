@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../models/species_models.dart';
 
@@ -65,7 +66,7 @@ class SpeciesListTile extends StatelessWidget {
                 border: Border.all(color: Colors.green.shade200),
               ),
               child: Text(
-                '합법',
+                AppLocalizations.of(context)!.whitelist,
                 style: TextStyle(
                   fontSize: 10,
                   color: Colors.green.shade700,
