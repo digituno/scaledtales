@@ -8,7 +8,7 @@ import '../../animal/screens/animal_list_screen.dart';
 import '../../care_log/models/care_log_model.dart';
 import '../../care_log/providers/care_log_provider.dart';
 import '../../care_log/screens/care_log_form_screen.dart';
-import '../../care_log/widgets/care_log_card.dart';
+import '../widgets/care_log_calendar.dart';
 import '../../species/screens/species_search_screen.dart';
 import '../../species/screens/species_selector_screen.dart';
 
@@ -208,31 +208,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            data: (careLogs) {
-              if (careLogs.isEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Center(
-                    child: Text(
-                      l10n.emptyLogs,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                );
-              }
-              // 최근 3건만 표시
-              final recent = careLogs.take(3).toList();
-              return Column(
-                children: recent
-                    .map<Widget>((log) => CareLogCard(
-                          careLog: log,
-                          showAnimalName: true,
-                        ))
-                    .toList(),
-              );
-            },
+            data: (careLogs) => CareLogCalendar(careLogs: careLogs),
           ),
         ],
       ),
