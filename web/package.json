@@ -1,0 +1,25 @@
+{
+  "name": "scaledtales-admin",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev --port 3001",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@nuxt/ui": "^2.18.4",
+    "@pinia/nuxt": "^0.5.1",
+    "@supabase/supabase-js": "^2.45.0",
+    "nuxt": "^3.13.0",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.38"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "typescript": "^5.5.4",
+    "vue-tsc": "^2.0.29"
+  }
+}

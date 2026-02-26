@@ -10,6 +10,7 @@ import { AnimalsModule } from './animals/animals.module';
 import { UploadModule } from './upload/upload.module';
 import { MeasurementsModule } from './measurements/measurements.module';
 import { CareLogsModule } from './care-logs/care-logs.module';
+import { AdminModule } from './admin/admin.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 
@@ -57,6 +58,7 @@ if (process.env.DB_HOST) {
     MeasurementsModule,
     CareLogsModule,
     UploadModule,
+    AdminModule,
   );
 }
 
