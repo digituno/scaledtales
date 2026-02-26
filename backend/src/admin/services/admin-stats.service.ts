@@ -54,7 +54,7 @@ export class AdminStatsService {
 
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const newUsersThisMonth = (authData?.users ?? []).filter(
+    const newUsersThisMonth = ((authData?.users ?? []) as any[]).filter(
       (u) => new Date(u.created_at) >= monthStart,
     ).length;
 

@@ -9,9 +9,15 @@ export class AdminUsersService {
 
   async listUsers(dto: QueryAdminUsersDto) {
     const { page = 1, limit = 20, email } = dto;
-    const offset = (page - 1) * limit;
 
-    // Supabase Admin Auth에서 전체 사용자 목록 조회
+    // 이메일 검색 시: Supabase Admin Auth API는 서버사이드 이메일 필터를 지원하지
+    // 않으므로, 전체 사용자를 한 번에 가져온 뒤 in-memory 필터링 후 페이지네이션.
+    // 이메일 없는 일반 목록: 페이지 단위로 가져와 DB join.
+    if (email) {
+      return this.listUsersWithEmailSearch(email, page, limit);
+    }
+
+    // 일반 페이지네이션 (이메일 검색 없음)
     const { data: authData, error: authError } =
       await this.supabaseService.getAdminAuth().listUsers({
         page,
@@ -20,23 +26,65 @@ export class AdminUsersService {
 
     if (authError) throw new Error(authError.message);
 
-    // 이메일 필터링
-    let users = authData.users;
-    if (email) {
-      const lowerEmail = email.toLowerCase();
-      users = users.filter((u) =>
-        u.email?.toLowerCase().includes(lowerEmail),
-      );
+    return this.buildResult(authData.users, page, limit, (authData as any).total ?? 0);
+  }
+
+  /** 이메일 검색: 전체 사용자 fetch 후 in-memory 필터 + 페이지네이션 */
+  private async listUsersWithEmailSearch(
+    email: string,
+    page: number,
+    limit: number,
+  ) {
+    // Supabase Admin Auth listUsers 최대 perPage = 1000
+    const PER_PAGE = 1000;
+    let allUsers: any[] = [];
+    let currentPage = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+      const { data, error } = await this.supabaseService
+        .getAdminAuth()
+        .listUsers({ page: currentPage, perPage: PER_PAGE });
+
+      if (error) throw new Error(error.message);
+
+      allUsers = allUsers.concat(data.users);
+
+      // 마지막 페이지 판단: 받은 수가 perPage보다 적으면 끝
+      hasMore = data.users.length === PER_PAGE;
+      currentPage++;
     }
 
+    // in-memory 이메일 필터
+    const lowerEmail = email.toLowerCase();
+    const filtered = allUsers.filter((u) =>
+      u.email?.toLowerCase().includes(lowerEmail),
+    );
+
+    // 페이지네이션 적용
+    const total = filtered.length;
+    const start = (page - 1) * limit;
+    const paged = filtered.slice(start, start + limit);
+
+    return this.buildResult(paged, page, limit, total);
+  }
+
+  /** Auth users → user_profile role 조인 후 응답 객체 생성 */
+  private async buildResult(
+    users: any[],
+    page: number,
+    limit: number,
+    total: number,
+  ) {
     const userIds = users.map((u) => u.id);
 
-    // user_profile에서 role 조회
-    const { data: profiles } = await this.supabaseService
-      .getClient()
-      .from('user_profile')
-      .select('id, role, created_at')
-      .in('id', userIds);
+    const { data: profiles } = userIds.length
+      ? await this.supabaseService
+          .getClient()
+          .from('user_profile')
+          .select('id, role')
+          .in('id', userIds)
+      : { data: [] };
 
     const profileMap = new Map(
       (profiles ?? []).map((p: any) => [p.id, p]),
@@ -55,11 +103,7 @@ export class AdminUsersService {
 
     return {
       data: result,
-      pagination: {
-        page,
-        limit,
-        total: authData.total ?? result.length,
-      },
+      pagination: { page, limit, total },
     };
   }
 
