@@ -174,8 +174,8 @@ async function fetchSpecies() {
         search: search.value || undefined,
       },
     })
-    species.value = res.data.data
-    pagination.value = { ...pagination.value, ...res.data.pagination }
+    species.value = res.data
+    pagination.value = { ...pagination.value, ...res.pagination }
   } catch (e) {
     toast.add({ title: '종 목록 조회 실패', color: 'red' })
   } finally {

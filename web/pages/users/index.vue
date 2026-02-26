@@ -161,8 +161,8 @@ async function fetchUsers() {
         email: emailSearch.value || undefined,
       },
     })
-    users.value = res.data.data
-    pagination.value = { ...pagination.value, ...res.data.pagination }
+    users.value = res.data
+    pagination.value = { ...pagination.value, ...res.pagination }
   } catch {
     toast.add({ title: '사용자 목록 조회 실패', color: 'red' })
   } finally {
