@@ -5,12 +5,22 @@
         <h1 class="text-2xl font-bold text-gray-900">종 관리</h1>
         <p class="text-gray-500 mt-1">등록된 파충류/양서류 종 정보를 관리합니다</p>
       </div>
-      <UButton
-        icon="i-heroicons-plus"
-        @click="openCreateModal"
-      >
-        종 추가
-      </UButton>
+      <div class="flex gap-2">
+        <UButton
+          icon="i-heroicons-arrow-up-tray"
+          variant="outline"
+          color="gray"
+          @click="showImportModal = true"
+        >
+          CSV 임포트
+        </UButton>
+        <UButton
+          icon="i-heroicons-plus"
+          @click="openCreateModal"
+        >
+          종 추가
+        </UButton>
+      </div>
     </div>
 
     <!-- 검색 -->
@@ -109,6 +119,13 @@
       </div>
     </div>
 
+    <!-- CSV 임포트 모달 -->
+    <SpeciesImportModal
+      v-if="showImportModal"
+      @close="showImportModal = false"
+      @saved="onImportSaved"
+    />
+
     <!-- 생성/수정 모달 -->
     <SpeciesFormModal
       v-if="showModal"
@@ -154,6 +171,7 @@ const editingSpecies = ref<any>(null)
 const showDeleteModal = ref(false)
 const deletingSpecies = ref<any>(null)
 const deleting = ref(false)
+const showImportModal = ref(false)
 
 const columns = [
   { key: 'species_kr', label: '종명 (한국어)' },
@@ -225,6 +243,11 @@ async function deleteSpecies() {
 
 function onSaved() {
   showModal.value = false
+  fetchSpecies()
+}
+
+function onImportSaved() {
+  showImportModal.value = false
   fetchSpecies()
 }
 

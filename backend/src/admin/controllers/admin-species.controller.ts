@@ -26,6 +26,7 @@ import { AdminGuard } from '../guards/admin.guard';
 import { AdminSpeciesService } from '../services/admin-species.service';
 import { CreateSpeciesDto } from '../dto/create-species.dto';
 import { UpdateSpeciesDto } from '../dto/update-species.dto';
+import { BulkImportSpeciesDto } from '../dto/bulk-import-species.dto';
 
 @ApiTags('Admin - Species')
 @ApiBearerAuth()
@@ -55,6 +56,13 @@ export class AdminSpeciesController {
   @ApiCreatedResponse({ description: '생성된 종' })
   async createSpecies(@Body() dto: CreateSpeciesDto) {
     return this.adminSpeciesService.createSpecies(dto);
+  }
+
+  @Post('bulk-import')
+  @ApiOperation({ summary: 'CSV 파싱 결과 대량 임포트 (관리자)' })
+  @ApiOkResponse({ description: '임포트 결과: { success, failed, errors }' })
+  async bulkImport(@Body() dto: BulkImportSpeciesDto) {
+    return this.adminSpeciesService.bulkImport(dto.rows);
   }
 
   @Patch(':id')
