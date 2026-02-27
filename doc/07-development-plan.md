@@ -2,7 +2,7 @@
 
 ## 개요
 
-ScaledTales MVP는 **12주+ (약 3개월)** 동안 개발됩니다.
+ScaledTales MVP는 **14주+ (약 3.5개월)** 동안 개발됩니다.
 
 **개발 방식:** 1인 개발 + Claude Code 활용
 **목표:** 완성도 높은 MVP 완성 및 앱 스토어 제출
@@ -35,6 +35,7 @@ ScaledTales MVP는 **12주+ (약 3개월)** 동안 개발됩니다.
 | Week 11 | 아키텍처 정비 | Provider CRUD 통일 + ApiConstants 정비 | ✅ `dart analyze` 0 issues |
 | Week 12 | 리팩터링 완성 | Form 상태 분리 + Freezed 도입 | ✅ `dart analyze` 0 issues |
 | Week 13 | Role 시스템 | 사용자 역할 도입 + 권한 기반 UI | ✅ suspended role 쓰기 버튼 비노출 |
+| Week 14 | 웹 어드민 | Nuxt 3 관리자 패널 + CSV 임포트 | ✅ 관리자 로그인 및 종/사용자 관리 |
 
 ---
 
@@ -1337,6 +1338,92 @@ CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users
 
 ---
 
+## Week 14: 웹 어드민 패널
+
+**목표:** 관리자 전용 백오피스 구축 — 종 데이터 관리 및 사용자 권한 제어
+
+### 구현 내용
+
+#### 백엔드 — AdminModule (`src/admin/`)
+
+**AdminGuard:**
+```typescript
+// JWT user_id → user_profile.role = 'admin' 실시간 검증
+// JwtAuthGuard + AdminGuard 이중 보호
+@Injectable()
+export class AdminGuard implements CanActivate {
+  async canActivate(context): Promise<boolean> {
+    const user = context.switchToHttp().getRequest().user;
+    const { data } = await supabase.from('user_profile')
+      .select('role').eq('id', user.sub).single();
+    return data?.role === 'admin';
+  }
+}
+```
+
+**엔드포인트 요약:**
+
+| 경로 | 설명 |
+|------|------|
+| `GET /admin/stats` | 개체/일지/종/사용자 통계 |
+| `GET /admin/users` | 사용자 목록 (이메일 검색) |
+| `PATCH /admin/users/:id/role` | 역할 변경 |
+| `GET /admin/species` | 종 목록 (검색/페이지네이션) |
+| `POST /admin/species` | 종 단건 생성 |
+| `PATCH /admin/species/:id` | 종 수정 |
+| `DELETE /admin/species/:id` | 종 삭제 |
+| `POST /admin/species/bulk-import` | CSV 대량 임포트 |
+| `GET /admin/taxonomy/tree` | 전체 분류 트리 |
+| `POST/PATCH/DELETE /admin/taxonomy/classes` | 강 CRUD |
+| `POST/PATCH/DELETE /admin/taxonomy/orders` | 목 CRUD |
+| `POST/PATCH/DELETE /admin/taxonomy/families` | 과 CRUD |
+| `POST/PATCH/DELETE /admin/taxonomy/genera` | 속 CRUD |
+
+#### 프론트엔드 — 웹 어드민 (`web/`)
+
+**기술 스택:** Nuxt 3 (SPA) + Vue 3 + TypeScript + Nuxt UI v2 + Pinia
+
+**페이지 구성:**
+
+| 페이지 | 경로 | 주요 기능 |
+|--------|------|----------|
+| 대시보드 | `/dashboard` | 통계 카드 4종 + 케어로그 타입별 바 차트 |
+| 종 관리 | `/species` | 검색/페이지네이션 + CRUD + CSV 임포트 |
+| 분류 트리 | `/taxonomy` | 계층별 아코디언 + 인라인 CRUD |
+| 사용자 관리 | `/users` | 이메일 검색 + 역할 변경 셀렉트 |
+
+**CSV 임포트 (`SpeciesImportModal.vue`):**
+- 3단계 워크플로: 입력 → 미리보기 → 결과
+- 파일 드래그&드롭 또는 텍스트 직접 붙여넣기
+- 클라이언트 파싱 + 실시간 오류 표시
+- 성공/실패 수 + 실패 행별 원인 상세 표시
+
+**인증 흐름:**
+```
+이메일/패스워드 → Supabase Auth
+→ GET /auth/me (role 확인)
+→ role === 'admin'이면 대시보드 진입
+→ 미들웨어(auth.global.ts)가 모든 라우트 보호
+```
+
+### 이슈 및 해결
+
+| 이슈 | 원인 | 해결 |
+|------|------|------|
+| 이메일 검색 결과 없음 | `listUsers({ perPage: 20 })`은 첫 20건만 반환 | 전체 페이지 loop 후 메모리 필터링 |
+| API 응답 필드 불일치 | `ResponseInterceptor`가 `{ data: [], pagination }` → `{ data: [], pagination }` 평탄화 | `res.data` (배열), `res.pagination` 직접 접근 |
+| 모달 backdrop 닫힘 미전파 | `UModal v-model`만으로는 부모에게 close 미전달 | `watch(open, val => !val && emit('close'))` 추가 |
+
+**Week 14 완료 기준:**
+- ✅ 백엔드 AdminModule 구현 및 빌드 통과
+- ✅ 웹 어드민 4개 페이지 구현 (대시보드/종/분류/사용자)
+- ✅ CSV 대량 임포트 기능 (3단계 UI)
+- ✅ 관리자 계정(`nije1983@gmail.com`) role='admin' 설정
+- ✅ `nuxi typecheck` 통과 + Nuxt 빌드 성공
+- ✅ TypeScript 오류 및 모달 버그 수정 완료
+
+---
+
 ## 일정 조정 가이드
 
 ### 빠른 MVP (6주)
@@ -1375,6 +1462,6 @@ CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users
 
 ---
 
-**문서 버전**: 1.3
-**최종 수정일**: 2026-02-25
+**문서 버전**: 1.4
+**최종 수정일**: 2026-02-27
 **작성자**: 비늘꼬리 & 게코

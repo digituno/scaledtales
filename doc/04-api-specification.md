@@ -821,6 +821,297 @@ GET /users/me/stats
 
 ---
 
+## 9. 관리자 API (Admin) — 웹 어드민 전용
+
+> **접근 권한**: `Authorization: Bearer <JWT>` + `user_profile.role = 'admin'`
+> 모든 엔드포인트에 `JwtAuthGuard` + `AdminGuard` 적용.
+> 일반 사용자 요청 시 `403 Forbidden` 반환.
+
+---
+
+### 9.1 서비스 통계 조회
+
+```
+GET /admin/stats
+```
+
+**응답:**
+```json
+{
+  "success": true,
+  "data": {
+    "animals": {
+      "total": 152,
+      "alive": 140,
+      "newThisMonth": 12
+    },
+    "careLogs": {
+      "total": 430,
+      "byType": [
+        { "type": "FEEDING", "count": 250 },
+        { "type": "SHEDDING", "count": 80 }
+      ]
+    },
+    "species": {
+      "total": 38
+    },
+    "users": {
+      "total": 25,
+      "newThisMonth": 3
+    }
+  }
+}
+```
+
+---
+
+### 9.2 사용자 목록 조회
+
+```
+GET /admin/users?page=1&limit=20&email=
+```
+
+**Query Parameters:**
+
+| 파라미터 | 타입 | 설명 |
+|---------|------|------|
+| `page` | number | 페이지 번호 (기본 1) |
+| `limit` | number | 페이지당 항목 수 (기본 20) |
+| `email` | string | 이메일 부분 검색 (전체 유저 대상) |
+
+> `email` 파라미터 사용 시 Supabase Auth 전체 유저를 메모리에서 필터링합니다 (서버 측 검색 미지원).
+
+**응답:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "email": "user@example.com",
+      "role": "user",
+      "created_at": "2026-01-01T00:00:00Z",
+      "last_sign_in_at": "2026-02-20T10:00:00Z"
+    }
+  ],
+  "pagination": { "page": 1, "limit": 20, "total": 25 }
+}
+```
+
+---
+
+### 9.3 사용자 역할 변경
+
+```
+PATCH /admin/users/:userId/role
+```
+
+**Request Body:**
+```json
+{ "role": "pro_breeder" }
+```
+
+**유효한 role 값:** `admin` | `seller` | `pro_breeder` | `user` | `suspended`
+
+**응답:** `200 OK` — 업데이트된 `user_profile` 레코드
+
+---
+
+### 9.4 종 목록 조회 (관리자)
+
+```
+GET /admin/species?page=1&limit=20&search=&genusId=
+```
+
+**Query Parameters:**
+
+| 파라미터 | 타입 | 설명 |
+|---------|------|------|
+| `page` | number | 페이지 번호 |
+| `limit` | number | 페이지당 항목 수 |
+| `search` | string | 한국명/영명/학명 ILIKE 검색 |
+| `genusId` | UUID | 특정 속 필터 |
+
+**응답:** 종 목록 + 중첩된 분류 계층 (`genus → family → order → taxonomyClass`)
+
+---
+
+### 9.5 종 생성
+
+```
+POST /admin/species
+```
+
+**Request Body:**
+```json
+{
+  "genusId": "uuid",
+  "species_kr": "볼파이썬",
+  "species_en": "Ball Python",
+  "scientific_name": "Python regius",
+  "common_name_kr": null,
+  "common_name_en": null,
+  "is_cites": false,
+  "cites_level": null,
+  "is_whitelist": true
+}
+```
+
+**유효한 cites_level:** `APPENDIX_I` | `APPENDIX_II` | `APPENDIX_III`
+
+---
+
+### 9.6 종 수정
+
+```
+PATCH /admin/species/:id
+```
+
+**Request Body:** `9.5`와 동일 구조 (모든 필드 선택적)
+
+---
+
+### 9.7 종 삭제
+
+```
+DELETE /admin/species/:id
+```
+
+**응답:** `204 No Content`
+
+---
+
+### 9.8 CSV 종 대량 임포트
+
+```
+POST /admin/species/bulk-import
+```
+
+> CSV를 클라이언트에서 파싱한 뒤, JSON 배열로 전송합니다.
+
+**Request Body:**
+```json
+{
+  "rows": [
+    {
+      "genus_name": "Python",
+      "species_kr": "볼파이썬",
+      "species_en": "Ball Python",
+      "scientific_name": "Python regius",
+      "common_name_kr": null,
+      "common_name_en": null,
+      "is_cites": false,
+      "cites_level": null,
+      "is_whitelist": true
+    }
+  ]
+}
+```
+
+**응답:**
+```json
+{
+  "success": true,
+  "data": {
+    "success": 45,
+    "failed": 2,
+    "errors": [
+      { "row": 3, "genus_name": "Unknownus", "reason": "속(Genus) 'Unknownus'를 찾을 수 없음" },
+      { "row": 7, "genus_name": "Python", "reason": "학명 'Python regius' 중복" }
+    ]
+  }
+}
+```
+
+**실패 처리:** 일부 행이 실패해도 나머지 성공 행은 정상 저장됩니다.
+
+---
+
+### 9.9 분류 트리 조회
+
+```
+GET /admin/taxonomy/tree
+```
+
+**응답:** 강(Class) 전체를 루트로 하는 중첩 트리
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "name_kr": "파충류",
+      "name_en": "Reptilia",
+      "code": "REPTILIA",
+      "orders": [
+        {
+          "id": "uuid",
+          "name_kr": "유린목",
+          "name_en": "Squamata",
+          "families": [
+            {
+              "id": "uuid",
+              "name_kr": "비단뱀과",
+              "name_en": "Pythonidae",
+              "genera": [
+                { "id": "uuid", "name_kr": "비단뱀속", "name_en": "Python" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### 9.10 분류 계층 CRUD
+
+#### 강 (Class)
+
+| 메서드 | 경로 | 설명 |
+|--------|------|------|
+| `POST` | `/admin/taxonomy/classes` | 강 생성 |
+| `PATCH` | `/admin/taxonomy/classes/:id` | 강 수정 |
+| `DELETE` | `/admin/taxonomy/classes/:id` | 강 삭제 (CASCADE) |
+
+**강 생성 Body:** `{ "name_kr": "파충류", "name_en": "Reptilia", "code": "REPTILIA" }`
+
+#### 목 (Order)
+
+| 메서드 | 경로 | 설명 |
+|--------|------|------|
+| `POST` | `/admin/taxonomy/orders` | 목 생성 |
+| `PATCH` | `/admin/taxonomy/orders/:id` | 목 수정 |
+| `DELETE` | `/admin/taxonomy/orders/:id` | 목 삭제 (CASCADE) |
+
+**목 생성 Body:** `{ "classId": "uuid", "name_kr": "유린목", "name_en": "Squamata" }`
+
+#### 과 (Family)
+
+| 메서드 | 경로 | 설명 |
+|--------|------|------|
+| `POST` | `/admin/taxonomy/families` | 과 생성 |
+| `PATCH` | `/admin/taxonomy/families/:id` | 과 수정 |
+| `DELETE` | `/admin/taxonomy/families/:id` | 과 삭제 (CASCADE) |
+
+**과 생성 Body:** `{ "orderId": "uuid", "name_kr": "비단뱀과", "name_en": "Pythonidae" }`
+
+#### 속 (Genus)
+
+| 메서드 | 경로 | 설명 |
+|--------|------|------|
+| `POST` | `/admin/taxonomy/genera` | 속 생성 |
+| `PATCH` | `/admin/taxonomy/genera/:id` | 속 수정 |
+| `DELETE` | `/admin/taxonomy/genera/:id` | 속 삭제 (CASCADE) |
+
+**속 생성 Body:** `{ "familyId": "uuid", "name_kr": "비단뱀속", "name_en": "Python" }`
+
+---
+
 ## API 사용 예시
 
 ### 예시 1: 개체 등록 플로우
@@ -926,6 +1217,6 @@ const logResponse = await fetch(`/animals/${animalId}/care-logs`, {
 
 ---
 
-**문서 버전**: 1.0  
-**최종 수정일**: 2024-02-16  
+**문서 버전**: 1.1
+**최종 수정일**: 2026-02-27
 **작성자**: 비늘꼬리 & 게코
