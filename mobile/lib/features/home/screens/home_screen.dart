@@ -13,7 +13,9 @@ import '../../species/screens/species_search_screen.dart';
 import '../../species/screens/species_selector_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.onOpenDrawer});
+
+  final VoidCallback? onOpenDrawer;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,7 +24,13 @@ class HomeScreen extends ConsumerWidget {
     final careLogsAsync = ref.watch(allCareLogsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.appTitle)),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: onOpenDrawer,
+        ),
+        title: Text(l10n.appTitle),
+      ),
       body: animalsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, __) => _buildEmptyState(context, l10n),

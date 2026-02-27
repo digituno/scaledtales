@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'home_screen.dart';
 import '../../animal/screens/animal_list_screen.dart';
+import '../../announcements/screens/announcement_screen.dart';
 import '../../care_log/screens/care_log_list_screen.dart';
 import '../../settings/screens/settings_screen.dart';
+import '../widgets/app_drawer.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -14,45 +15,32 @@ class MainShell extends StatefulWidget {
 }
 
 class _MainShellState extends State<MainShell> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _currentIndex = 0;
 
-  final _screens = const [
-    HomeScreen(),
-    AnimalListScreen(),
-    CareLogListScreen(),
-    SettingsScreen(),
-  ];
+  void _openDrawer() => _scaffoldKey.currentState?.openDrawer();
+
+  void _navigateTo(int index) {
+    setState(() => _currentIndex = index);
+    _scaffoldKey.currentState?.closeDrawer();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: AppDrawer(
+        currentIndex: _currentIndex,
+        onNavigate: _navigateTo,
+      ),
       body: IndexedStack(
         index: _currentIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        type: BottomNavigationBarType.fixed,
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.home),
-            label: l10n.navHome,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.pets),
-            label: l10n.navAnimals,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.event_note),
-            label: l10n.navLogs,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.settings),
-            label: l10n.navSettings,
-          ),
+        children: [
+          HomeScreen(onOpenDrawer: _openDrawer),
+          AnnouncementScreen(onOpenDrawer: _openDrawer),
+          AnimalListScreen(onOpenDrawer: _openDrawer),
+          CareLogListScreen(onOpenDrawer: _openDrawer),
+          SettingsScreen(onOpenDrawer: _openDrawer),
         ],
       ),
     );

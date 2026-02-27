@@ -39,7 +39,7 @@ Localization auto-generates from ARB files via `l10n.yaml`. No manual `build_run
 - **Error handling**: `GlobalExceptionFilter` maps exceptions to `{ success: false, error: { code, message } }`
 - **Auth**: Supabase Auth issues JWT → `JwtStrategy` (passport-jwt) validates → `@CurrentUser()` decorator extracts user
 - **Supabase access**: `SupabaseService` (global module) provides `getClient()` and `getAdminAuth()` using SERVICE_ROLE_KEY
-- **TypeORM**: Conditional loading — only connects if `DB_HOST` env var is set. Modules that depend on TypeORM (SpeciesModule, CountriesModule, AnimalsModule, MeasurementsModule, UploadModule) are pushed into imports inside the `if (process.env.DB_HOST)` block in `app.module.ts`.
+- **TypeORM**: Conditional loading — only connects if `DB_HOST` env var is set. Modules that depend on TypeORM (SpeciesModule, CountriesModule, AnimalsModule, MeasurementsModule, UploadModule, CareLogsModule) are pushed into imports inside the `if (process.env.DB_HOST)` block in `app.module.ts`.
 - **Path aliases**: `@/*` → `src/*`, `@common/*` → `src/common/*`, `@config/*` → `src/config/*`
 
 ### Backend Modules
@@ -56,17 +56,18 @@ Localization auto-generates from ARB files via `l10n.yaml`. No manual `build_run
 - **Role-based UI**: `userRoleProvider` (`Provider<UserRole>`) — `GET /auth/me`에서 role 조회. `role.canWrite`가 false(suspended)이면 생성·수정·삭제 버튼 비노출. Provider는 `features/auth/providers/user_profile_provider.dart`에 정의.
 - **HTTP client**: Dio singleton (`DioClient`) with interceptor that auto-attaches Supabase session JWT and handles 401 logout
 - **Auth flow**: `SplashScreen` checks session → routes to `MainShell` (authenticated) or `LoginScreen` (unauthenticated). Uses both `ref.listen` (future changes) and `ref.read` + `addPostFrameCallback` (already-resolved state).
-- **Navigation**: `MainShell` uses `IndexedStack` + `BottomNavigationBar` with 4 tabs (Home, Animals, CareLogs, Settings)
+- **Navigation**: `MainShell` uses `IndexedStack` + Drawer (`GlobalKey<ScaffoldState>`) with 5 menus (Home, Announcements, Animals, CareLogs, Settings). Each tab screen exposes `onOpenDrawer` callback for AppBar hamburger button. `AppDrawer` widget in `features/home/widgets/app_drawer.dart`.
 - **Feature structure**: `lib/features/{feature}/providers/`, `screens/`, `widgets/`, `models/`
 - **i18n**: ARB files in `lib/l10n/` (template: `app_ko.arb`). Access via `AppLocalizations.of(context)!`. Korean is primary locale.
 - **API constants**: All endpoint paths defined in `core/constants/api_constants.dart`
 - **Supabase config**: Hardcoded in `core/constants/app_config.dart` (URL + anon key)
+- **Shared widgets**: `core/widgets/` — `AsyncValueWidget` (standard Riverpod AsyncValue handler with loading/error/retry), `EmptyStateWidget` (icon + title + subtitle + optional action). Import via `core/widgets/widgets.dart` barrel.
 
 ### Frontend Features
 - **Animal**: Full CRUD — list (filtering by status), detail (tabbed: info/measurements/care logs), create/edit (5-step Stepper form), delete with confirmation
 - **Measurement**: Growth charts via FL Chart (weight + length), period filter chips (1M/3M/6M/1Y/All), create/edit form with DatePicker. Integrated as Tab 2 in animal detail.
 - **Species**: Taxonomy browsing (class→order→family→genus→species), search (ILIKE), detail view, selection mode for animal registration
-- **Care log**: Full CRUD — list (BottomNav tab with allCareLogsProvider, filter chips by log type), card widget (icon/color per type, summary, image thumbnails), 4-step Stepper form (Animal&Type, DateTime, Details, Photos&Memo), FEEDING details form (food_type/item/quantity/unit/supplements/response/method). Integrated as Tab 3 in animal detail via CareLogTab.
+- **Care log**: Full CRUD — list (Drawer menu with allCareLogsProvider, filter chips by log type), card widget (icon/color per type, summary, image thumbnails), 4-step Stepper form (Animal&Type, DateTime, Details, Photos&Memo), FEEDING details form (food_type/item/quantity/unit/supplements/response/method). Integrated as Tab 3 in animal detail via CareLogTab.
 
 ### Shared Patterns
 - **ENUMs**: Backend (`src/common/enums/`) and frontend (`lib/core/enums/`) maintain matching enum definitions. Backend uses TypeScript string enums; frontend uses Dart enums with `fromValue()` static methods. Fixed codes are enums; dynamic data (species, countries) lives in DB. `UserRole` enum은 `user_profile.role` 값과 매핑 — `canWrite` getter로 쓰기 권한 판별.

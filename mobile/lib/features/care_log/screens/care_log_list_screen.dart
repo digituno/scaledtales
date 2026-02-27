@@ -11,7 +11,9 @@ import '../../auth/providers/user_profile_provider.dart';
 import 'care_log_form_screen.dart';
 
 class CareLogListScreen extends ConsumerStatefulWidget {
-  const CareLogListScreen({super.key});
+  const CareLogListScreen({super.key, this.onOpenDrawer});
+
+  final VoidCallback? onOpenDrawer;
 
   @override
   ConsumerState<CareLogListScreen> createState() => _CareLogListScreenState();
@@ -27,7 +29,13 @@ class _CareLogListScreenState extends ConsumerState<CareLogListScreen> {
     final canWrite = ref.watch(userRoleProvider).canWrite;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.careLogs)),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: widget.onOpenDrawer,
+        ),
+        title: Text(l10n.careLogs),
+      ),
       floatingActionButton: canWrite
           ? FloatingActionButton(
               heroTag: 'careLogListFab',

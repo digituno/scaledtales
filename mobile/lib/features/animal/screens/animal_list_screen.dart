@@ -12,7 +12,9 @@ import 'animal_create_screen.dart';
 import 'animal_detail_screen.dart';
 
 class AnimalListScreen extends ConsumerWidget {
-  const AnimalListScreen({super.key});
+  const AnimalListScreen({super.key, this.onOpenDrawer});
+
+  final VoidCallback? onOpenDrawer;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,7 +23,13 @@ class AnimalListScreen extends ConsumerWidget {
     final canWrite = ref.watch(userRoleProvider).canWrite;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.myAnimals)),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: onOpenDrawer,
+        ),
+        title: Text(l10n.myAnimals),
+      ),
       body: AsyncValueWidget(
         value: animalsAsync,
         onRetry: () => ref.read(animalListProvider.notifier).refresh(),

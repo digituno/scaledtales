@@ -2,7 +2,7 @@
 
 ## 개요
 
-ScaledTales Flutter 앱은 **Bottom Navigation Bar** 기반의 4개 메인 탭으로 구성되며, 각 탭은 독립적인 네비게이션 스택을 가집니다.
+ScaledTales Flutter 앱은 **좌측 Drawer** 기반의 5개 메뉴로 구성되며, 각 화면은 독립적인 네비게이션 스택을 가집니다.
 
 ---
 
@@ -15,39 +15,54 @@ ScaledTales App
 ├── Authentication
 │   ├── Login
 │   └── Sign Up
-└── Main App (Bottom Navigation)
-    ├── Home Tab
-    ├── Animals Tab
-    ├── Logs Tab
-    └── Settings Tab
+└── Main App (Left Drawer)
+    ├── 홈 (Home)
+    ├── 공지사항 (Announcements)  ← 신규
+    ├── 개체 (Animals)
+    ├── 일지 (Logs)
+    └── 설정 (Settings)
 ```
 
 ---
 
 ## 네비게이션 패턴
 
-### Bottom Navigation Bar (메인 4개 탭)
+### Left Drawer 네비게이션 (메인 5개 메뉴)
 
+`GlobalKey<ScaffoldState>`로 외부 Scaffold의 Drawer를 제어하고, 각 화면 AppBar의 `leading`에 햄버거 버튼을 통해 Drawer를 엽니다.
+
+**메뉴 구조:**
+```
+☰ ──────────────────────────
+  🏠 홈
+  ──────────────────────────
+  📢 공지사항
+  ──────────────────────────
+  🐾 개체
+  📓 일지
+  ──────────────────────────
+  ⚙️  설정
+```
+
+**구현 파일:**
+
+| 파일 | 역할 |
+|------|------|
+| `features/home/screens/main_shell.dart` | `GlobalKey<ScaffoldState>` + `AppDrawer` + `IndexedStack` |
+| `features/home/widgets/app_drawer.dart` | Drawer 위젯 (헤더: 이메일/역할, 5개 메뉴 ListTile) |
+| `features/announcements/screens/announcement_screen.dart` | 공지사항 플레이스홀더 화면 |
+
+**onOpenDrawer 콜백 패턴:**
 ```dart
-BottomNavigationBar(
-  items: [
-    BottomNavigationBarItem(
-      icon: Icon(Icons.home),
-      label: '홈',  // Home
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.pets),
-      label: '개체',  // Animals
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.event_note),
-      label: '일지',  // Logs
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.settings),
-      label: '설정',  // Settings
-    ),
-  ],
+// MainShell: GlobalKey로 Drawer 제어
+void _openDrawer() => _scaffoldKey.currentState?.openDrawer();
+
+// 각 탭 화면 AppBar
+AppBar(
+  leading: IconButton(
+    icon: Icon(Icons.menu),
+    onPressed: onOpenDrawer,  // MainShell에서 주입
+  ),
 )
 ```
 
@@ -999,11 +1014,12 @@ CareLogCard(
 ```
 로그인
   ↓
-┌─────────────────────────────┐
-│       Bottom Navigation      │
-├──────┬──────┬──────┬─────────┤
-│ 홈   │개체  │일지  │ 설정    │
-└──────┴──────┴──────┴─────────┘
+☰ (햄버거 버튼) → Drawer 열기
+  ├── 홈
+  ├── 공지사항
+  ├── 개체
+  ├── 일지
+  └── 설정
 
 홈 탭:
   → 개체 등록 → 개체 상세
@@ -1060,6 +1076,6 @@ CareLogCard(
 
 ---
 
-**문서 버전**: 1.2
-**최종 수정일**: 2026-02-25
+**문서 버전**: 1.3
+**최종 수정일**: 2026-02-27
 **작성자**: 비늘꼬리 & 게코

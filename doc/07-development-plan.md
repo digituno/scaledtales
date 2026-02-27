@@ -1424,6 +1424,32 @@ export class AdminGuard implements CanActivate {
 
 ---
 
+## Week 15: 모바일 네비게이션 리팩터링
+
+**목표:** 하단 탭 네비게이션 → 좌측 Drawer 전환 및 공지사항 메뉴 신규 추가
+
+| 항목 | 내용 |
+|------|------|
+| `main_shell.dart` | `BottomNavigationBar` 제거, `GlobalKey<ScaffoldState>` + `AppDrawer` 적용 |
+| `app_drawer.dart` | 신규 — `UserAccountsDrawerHeader` + 5개 메뉴 항목 + `Divider` 구분선 |
+| `announcement_screen.dart` | 신규 — 공지사항 플레이스홀더 (`EmptyStateWidget` 활용) |
+| 탭 화면 5개 | `onOpenDrawer` 파라미터 추가, AppBar 햄버거 버튼 적용 |
+| l10n | `navAnnouncements` 키 추가 (ko: 공지사항, en: Announcements) |
+
+**Drawer 메뉴 구조:**
+```
+홈 / ─── / 공지사항 / ─── / 개체 / 일지 / ─── / 설정
+```
+
+**Week 15 완료 기준:**
+- ✅ `dart analyze` 0 issues 확인
+- ✅ iOS Simulator에서 Drawer 정상 동작
+- ✅ 5개 메뉴 전환 및 Drawer 자동 닫힘 확인
+- ✅ Drawer 헤더에 사용자 이메일/역할 표시
+- ✅ 공지사항 화면 플레이스홀더 (`comingSoon` 표시)
+
+---
+
 ## 일정 조정 가이드
 
 ### 빠른 MVP (6주)
@@ -1462,6 +1488,6 @@ export class AdminGuard implements CanActivate {
 
 ---
 
-**문서 버전**: 1.4
+**문서 버전**: 1.5
 **최종 수정일**: 2026-02-27
 **작성자**: 비늘꼬리 & 게코
