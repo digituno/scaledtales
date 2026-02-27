@@ -39,6 +39,9 @@ class ApiConstants {
   static String careLogs(String animalId) => '/animals/$animalId/care-logs';
   static String careLogDetail(String logId) => '/care-logs/$logId';
 
+  // Announcements
+  static const String announcementsActive = '/announcements/active';
+
   // Upload
   static const String uploadProfile = '/upload/profile';
   static const String uploadCareLog = '/upload/care-log';

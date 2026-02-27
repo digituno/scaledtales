@@ -26,7 +26,10 @@ describe('GlobalExceptionFilter', () => {
 
   describe('HttpException 처리', () => {
     it('400 BadRequestException → INVALID_INPUT + 기본 한국어 메시지', () => {
-      filter.catch(new HttpException('잘못된 요청입니다', HttpStatus.BAD_REQUEST), mockHost);
+      filter.catch(
+        new HttpException('잘못된 요청입니다', HttpStatus.BAD_REQUEST),
+        mockHost,
+      );
 
       expect(mockResponse.status).toHaveBeenCalledWith(400);
       expect(mockResponse.json).toHaveBeenCalledWith({
@@ -39,7 +42,10 @@ describe('GlobalExceptionFilter', () => {
     });
 
     it('401 UnauthorizedException → UNAUTHORIZED + 기본 메시지', () => {
-      filter.catch(new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED), mockHost);
+      filter.catch(
+        new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED),
+        mockHost,
+      );
 
       expect(mockResponse.status).toHaveBeenCalledWith(401);
       expect(mockResponse.json).toHaveBeenCalledWith(
@@ -51,7 +57,10 @@ describe('GlobalExceptionFilter', () => {
     });
 
     it('403 ForbiddenException → FORBIDDEN', () => {
-      filter.catch(new HttpException('Forbidden', HttpStatus.FORBIDDEN), mockHost);
+      filter.catch(
+        new HttpException('Forbidden', HttpStatus.FORBIDDEN),
+        mockHost,
+      );
 
       expect(mockResponse.status).toHaveBeenCalledWith(403);
       expect(mockResponse.json).toHaveBeenCalledWith(
@@ -62,7 +71,10 @@ describe('GlobalExceptionFilter', () => {
     });
 
     it('404 NotFoundException → NOT_FOUND', () => {
-      filter.catch(new HttpException('Not Found', HttpStatus.NOT_FOUND), mockHost);
+      filter.catch(
+        new HttpException('Not Found', HttpStatus.NOT_FOUND),
+        mockHost,
+      );
 
       expect(mockResponse.status).toHaveBeenCalledWith(404);
       expect(mockResponse.json).toHaveBeenCalledWith(
@@ -73,7 +85,10 @@ describe('GlobalExceptionFilter', () => {
     });
 
     it('409 ConflictException → DUPLICATE', () => {
-      filter.catch(new HttpException('Conflict', HttpStatus.CONFLICT), mockHost);
+      filter.catch(
+        new HttpException('Conflict', HttpStatus.CONFLICT),
+        mockHost,
+      );
 
       expect(mockResponse.status).toHaveBeenCalledWith(409);
       expect(mockResponse.json).toHaveBeenCalledWith(
@@ -133,7 +148,10 @@ describe('GlobalExceptionFilter', () => {
         new HttpException(
           {
             statusCode: 400,
-            message: ['food_type은 필수입니다', 'food_item은 문자열이어야 합니다'],
+            message: [
+              'food_type은 필수입니다',
+              'food_item은 문자열이어야 합니다',
+            ],
             error: 'Bad Request',
           },
           HttpStatus.BAD_REQUEST,

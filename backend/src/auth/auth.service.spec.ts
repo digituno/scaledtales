@@ -34,7 +34,10 @@ describe('AuthService', () => {
         email: 'test@example.com',
         created_at: '2024-01-01T00:00:00Z',
       };
-      mockGetUserById.mockResolvedValue({ data: { user: mockUser }, error: null });
+      mockGetUserById.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
 
       const result = await service.getUserById('user-uuid-1');
 
@@ -51,7 +54,10 @@ describe('AuthService', () => {
         email: 'test@example.com',
         created_at: '2024-01-01T00:00:00Z',
       };
-      mockGetUserById.mockResolvedValue({ data: { user: mockUser }, error: null });
+      mockGetUserById.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
 
       await service.getUserById('user-uuid-1');
 
@@ -60,9 +66,14 @@ describe('AuthService', () => {
 
     it('Supabase에서 error 반환 → 에러 throw', async () => {
       const supabaseError = new Error('User not found');
-      mockGetUserById.mockResolvedValue({ data: { user: null }, error: supabaseError });
+      mockGetUserById.mockResolvedValue({
+        data: { user: null },
+        error: supabaseError,
+      });
 
-      await expect(service.getUserById('nonexistent')).rejects.toThrow('User not found');
+      await expect(service.getUserById('nonexistent')).rejects.toThrow(
+        'User not found',
+      );
     });
 
     it('email 필드가 없는 사용자도 처리 (email undefined)', async () => {
@@ -71,7 +82,10 @@ describe('AuthService', () => {
         email: undefined,
         created_at: '2024-01-01T00:00:00Z',
       };
-      mockGetUserById.mockResolvedValue({ data: { user: mockUser }, error: null });
+      mockGetUserById.mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      });
 
       const result = await service.getUserById('user-uuid-no-email');
 

@@ -19,7 +19,10 @@ describe('verifyAnimalOwnership', () => {
   });
 
   it('타인 소유 동물 → ForbiddenException', async () => {
-    animalRepo.findOne!.mockResolvedValue({ id: 'animal1', user_id: 'other_user' });
+    animalRepo.findOne!.mockResolvedValue({
+      id: 'animal1',
+      user_id: 'other_user',
+    });
 
     await expect(
       verifyAnimalOwnership(animalRepo as any, 'animal1', 'user1'),
@@ -30,7 +33,11 @@ describe('verifyAnimalOwnership', () => {
     const mockAnimal = { id: 'animal1', user_id: 'user1', name: '렉시' };
     animalRepo.findOne!.mockResolvedValue(mockAnimal);
 
-    const result = await verifyAnimalOwnership(animalRepo as any, 'animal1', 'user1');
+    const result = await verifyAnimalOwnership(
+      animalRepo as any,
+      'animal1',
+      'user1',
+    );
 
     expect(result).toEqual(mockAnimal);
     expect(animalRepo.findOne).toHaveBeenCalledWith({

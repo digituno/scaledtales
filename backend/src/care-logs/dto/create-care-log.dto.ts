@@ -38,7 +38,9 @@ export class CreateCareLogDto {
   @IsDateString()
   log_date: string;
 
-  @ApiProperty({ description: '상세 정보 (JSONB) — LogType별 구조는 CareLogDetails 참조' })
+  @ApiProperty({
+    description: '상세 정보 (JSONB) — LogType별 구조는 CareLogDetails 참조',
+  })
   @IsObject()
   details: CareLogDetails;
 

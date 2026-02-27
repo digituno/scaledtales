@@ -63,9 +63,7 @@ export class AdminSpeciesService {
       where: { id: dto.genusId },
     });
     if (!genus) {
-      throw new BadRequestException(
-        `Genus를 찾을 수 없습니다: ${dto.genusId}`,
-      );
+      throw new BadRequestException(`Genus를 찾을 수 없습니다: ${dto.genusId}`);
     }
 
     if (dto.is_cites && !dto.cites_level) {
@@ -128,8 +126,8 @@ export class AdminSpeciesService {
 
     // 기존 학명 목록 캐시 (중복 방지)
     const existingScientific = new Set<string>(
-      (await this.speciesRepo.find({ select: ['scientific_name'] })).map(
-        (s) => s.scientific_name.toLowerCase(),
+      (await this.speciesRepo.find({ select: ['scientific_name'] })).map((s) =>
+        s.scientific_name.toLowerCase(),
       ),
     );
 
@@ -141,27 +139,48 @@ export class AdminSpeciesService {
       const rowNum = i + 1;
 
       // 필수값 검증
-      if (!row.genus_name || !row.species_kr || !row.species_en || !row.scientific_name) {
-        errors.push({ row: rowNum, genus_name: row.genus_name ?? '', reason: '필수 항목 누락' });
+      if (
+        !row.genus_name ||
+        !row.species_kr ||
+        !row.species_en ||
+        !row.scientific_name
+      ) {
+        errors.push({
+          row: rowNum,
+          genus_name: row.genus_name ?? '',
+          reason: '필수 항목 누락',
+        });
         continue;
       }
 
       // CITES 일관성 검증
       if (row.is_cites && !row.cites_level) {
-        errors.push({ row: rowNum, genus_name: row.genus_name, reason: 'is_cites=true이지만 cites_level 누락' });
+        errors.push({
+          row: rowNum,
+          genus_name: row.genus_name,
+          reason: 'is_cites=true이지만 cites_level 누락',
+        });
         continue;
       }
 
       // Genus 조회
       const genus = genusMap.get(row.genus_name.toLowerCase());
       if (!genus) {
-        errors.push({ row: rowNum, genus_name: row.genus_name, reason: `속(Genus) '${row.genus_name}'를 찾을 수 없음` });
+        errors.push({
+          row: rowNum,
+          genus_name: row.genus_name,
+          reason: `속(Genus) '${row.genus_name}'를 찾을 수 없음`,
+        });
         continue;
       }
 
       // 학명 중복 확인
       if (existingScientific.has(row.scientific_name.toLowerCase())) {
-        errors.push({ row: rowNum, genus_name: row.genus_name, reason: `학명 '${row.scientific_name}' 중복` });
+        errors.push({
+          row: rowNum,
+          genus_name: row.genus_name,
+          reason: `학명 '${row.scientific_name}' 중복`,
+        });
         continue;
       }
 

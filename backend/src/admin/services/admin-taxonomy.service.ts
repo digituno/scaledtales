@@ -26,11 +26,7 @@ export class AdminTaxonomyService {
   // ── 전체 트리 조회 ──────────────────────────────────────────
   async getTree() {
     const classes = await this.classRepo.find({
-      relations: [
-        'orders',
-        'orders.families',
-        'orders.families.genera',
-      ],
+      relations: ['orders', 'orders.families', 'orders.families.genera'],
       order: { name_en: 'ASC' },
     });
     return classes;
@@ -47,21 +43,26 @@ export class AdminTaxonomyService {
     dto: Partial<CreateTaxonomyClassDto>,
   ): Promise<TaxonomyClass> {
     const entity = await this.classRepo.findOne({ where: { id } });
-    if (!entity) throw new NotFoundException(`강(Class)을 찾을 수 없습니다: ${id}`);
+    if (!entity)
+      throw new NotFoundException(`강(Class)을 찾을 수 없습니다: ${id}`);
     Object.assign(entity, dto);
     return this.classRepo.save(entity);
   }
 
   async deleteClass(id: string): Promise<void> {
     const entity = await this.classRepo.findOne({ where: { id } });
-    if (!entity) throw new NotFoundException(`강(Class)을 찾을 수 없습니다: ${id}`);
+    if (!entity)
+      throw new NotFoundException(`강(Class)을 찾을 수 없습니다: ${id}`);
     await this.classRepo.remove(entity);
   }
 
   // ── Order ──────────────────────────────────────────────────
   async createOrder(dto: CreateTaxonomyOrderDto): Promise<Order> {
     const cls = await this.classRepo.findOne({ where: { id: dto.classId } });
-    if (!cls) throw new NotFoundException(`강(Class)을 찾을 수 없습니다: ${dto.classId}`);
+    if (!cls)
+      throw new NotFoundException(
+        `강(Class)을 찾을 수 없습니다: ${dto.classId}`,
+      );
     const entity = this.orderRepo.create({ ...dto, taxonomyClass: cls });
     return this.orderRepo.save(entity);
   }
@@ -71,7 +72,8 @@ export class AdminTaxonomyService {
     dto: Partial<CreateTaxonomyOrderDto>,
   ): Promise<Order> {
     const entity = await this.orderRepo.findOne({ where: { id } });
-    if (!entity) throw new NotFoundException(`목(Order)을 찾을 수 없습니다: ${id}`);
+    if (!entity)
+      throw new NotFoundException(`목(Order)을 찾을 수 없습니다: ${id}`);
     if (dto.classId) entity.classId = dto.classId;
     if (dto.name_kr) entity.name_kr = dto.name_kr;
     if (dto.name_en) entity.name_en = dto.name_en;
@@ -80,14 +82,18 @@ export class AdminTaxonomyService {
 
   async deleteOrder(id: string): Promise<void> {
     const entity = await this.orderRepo.findOne({ where: { id } });
-    if (!entity) throw new NotFoundException(`목(Order)을 찾을 수 없습니다: ${id}`);
+    if (!entity)
+      throw new NotFoundException(`목(Order)을 찾을 수 없습니다: ${id}`);
     await this.orderRepo.remove(entity);
   }
 
   // ── Family ──────────────────────────────────────────────────
   async createFamily(dto: CreateTaxonomyFamilyDto): Promise<Family> {
     const order = await this.orderRepo.findOne({ where: { id: dto.orderId } });
-    if (!order) throw new NotFoundException(`목(Order)을 찾을 수 없습니다: ${dto.orderId}`);
+    if (!order)
+      throw new NotFoundException(
+        `목(Order)을 찾을 수 없습니다: ${dto.orderId}`,
+      );
     const entity = this.familyRepo.create({ ...dto, order });
     return this.familyRepo.save(entity);
   }
@@ -97,7 +103,8 @@ export class AdminTaxonomyService {
     dto: Partial<CreateTaxonomyFamilyDto>,
   ): Promise<Family> {
     const entity = await this.familyRepo.findOne({ where: { id } });
-    if (!entity) throw new NotFoundException(`과(Family)를 찾을 수 없습니다: ${id}`);
+    if (!entity)
+      throw new NotFoundException(`과(Family)를 찾을 수 없습니다: ${id}`);
     if (dto.orderId) entity.orderId = dto.orderId;
     if (dto.name_kr) entity.name_kr = dto.name_kr;
     if (dto.name_en) entity.name_en = dto.name_en;
@@ -106,14 +113,20 @@ export class AdminTaxonomyService {
 
   async deleteFamily(id: string): Promise<void> {
     const entity = await this.familyRepo.findOne({ where: { id } });
-    if (!entity) throw new NotFoundException(`과(Family)를 찾을 수 없습니다: ${id}`);
+    if (!entity)
+      throw new NotFoundException(`과(Family)를 찾을 수 없습니다: ${id}`);
     await this.familyRepo.remove(entity);
   }
 
   // ── Genus ──────────────────────────────────────────────────
   async createGenus(dto: CreateTaxonomyGenusDto): Promise<Genus> {
-    const family = await this.familyRepo.findOne({ where: { id: dto.familyId } });
-    if (!family) throw new NotFoundException(`과(Family)를 찾을 수 없습니다: ${dto.familyId}`);
+    const family = await this.familyRepo.findOne({
+      where: { id: dto.familyId },
+    });
+    if (!family)
+      throw new NotFoundException(
+        `과(Family)를 찾을 수 없습니다: ${dto.familyId}`,
+      );
     const entity = this.genusRepo.create({ ...dto, family });
     return this.genusRepo.save(entity);
   }
@@ -123,7 +136,8 @@ export class AdminTaxonomyService {
     dto: Partial<CreateTaxonomyGenusDto>,
   ): Promise<Genus> {
     const entity = await this.genusRepo.findOne({ where: { id } });
-    if (!entity) throw new NotFoundException(`속(Genus)을 찾을 수 없습니다: ${id}`);
+    if (!entity)
+      throw new NotFoundException(`속(Genus)을 찾을 수 없습니다: ${id}`);
     if (dto.familyId) entity.familyId = dto.familyId;
     if (dto.name_kr) entity.name_kr = dto.name_kr;
     if (dto.name_en) entity.name_en = dto.name_en;
@@ -132,7 +146,8 @@ export class AdminTaxonomyService {
 
   async deleteGenus(id: string): Promise<void> {
     const entity = await this.genusRepo.findOne({ where: { id } });
-    if (!entity) throw new NotFoundException(`속(Genus)을 찾을 수 없습니다: ${id}`);
+    if (!entity)
+      throw new NotFoundException(`속(Genus)을 찾을 수 없습니다: ${id}`);
     await this.genusRepo.remove(entity);
   }
 }

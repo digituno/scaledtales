@@ -230,7 +230,7 @@ export class CareLogsService {
       throw new BadRequestException('behavior_notes는 문자열이어야 합니다');
     }
     if (details.expected_laying_date !== undefined) {
-      const date = new Date(details.expected_laying_date as string);
+      const date = new Date(details.expected_laying_date);
       if (isNaN(date.getTime())) {
         throw new BadRequestException(
           'expected_laying_date는 유효한 날짜여야 합니다',
@@ -294,7 +294,7 @@ export class CareLogsService {
       throw new BadRequestException('incubation_humidity는 숫자여야 합니다');
     }
     if (details.expected_hatch_date !== undefined) {
-      const date = new Date(details.expected_hatch_date as string);
+      const date = new Date(details.expected_hatch_date);
       if (isNaN(date.getTime())) {
         throw new BadRequestException(
           'expected_hatch_date는 유효한 날짜여야 합니다',

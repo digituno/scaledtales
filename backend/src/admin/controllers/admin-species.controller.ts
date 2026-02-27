@@ -48,7 +48,12 @@ export class AdminSpeciesController {
     @Query('search') search?: string,
     @Query('genusId') genusId?: string,
   ) {
-    return this.adminSpeciesService.listSpecies({ page, limit, search, genusId });
+    return this.adminSpeciesService.listSpecies({
+      page,
+      limit,
+      search,
+      genusId,
+    });
   }
 
   @Post()

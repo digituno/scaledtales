@@ -9,9 +9,9 @@ import { ObjectLiteral, Repository } from 'typeorm';
  *     { provide: getRepositoryToken(Animal), useFactory: createMockRepository },
  *   ]
  */
-export const createMockRepository = <
-  T extends ObjectLiteral,
->(): Partial<Record<keyof Repository<T>, jest.Mock>> => ({
+export const createMockRepository = <T extends ObjectLiteral>(): Partial<
+  Record<keyof Repository<T>, jest.Mock>
+> => ({
   findOne: jest.fn(),
   find: jest.fn(),
   create: jest.fn(),

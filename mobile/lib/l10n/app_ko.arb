@@ -309,5 +309,8 @@
   "totalAnimals": "전체 개체",
   "recentLogs": "최근 일지",
   "quickActions": "빠른 액션",
-  "viewAll": "전체 보기"
+  "viewAll": "전체 보기",
+
+  "dontShowAgain": "다시 보지 않기",
+  "noAnnouncements": "현재 공지사항이 없습니다."
 }

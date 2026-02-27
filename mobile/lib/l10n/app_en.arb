@@ -309,5 +309,8 @@
   "totalAnimals": "Total Animals",
   "recentLogs": "Recent Logs",
   "quickActions": "Quick Actions",
-  "viewAll": "View All"
+  "viewAll": "View All",
+
+  "dontShowAgain": "Don't show again",
+  "noAnnouncements": "No announcements at this time."
 }

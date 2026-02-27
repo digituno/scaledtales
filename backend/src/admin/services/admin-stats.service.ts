@@ -41,9 +41,7 @@ export class AdminStatsService {
       // 이번달 신규 개체
       this.animalRepo
         .createQueryBuilder('a')
-        .where(
-          "DATE_TRUNC('month', a.created_at) = DATE_TRUNC('month', NOW())",
-        )
+        .where("DATE_TRUNC('month', a.created_at) = DATE_TRUNC('month', NOW())")
         .getCount(),
     ]);
 

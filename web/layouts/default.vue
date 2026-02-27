@@ -64,6 +64,7 @@ const authStore = useAuthStore()
 
 const navItems = [
   { to: '/dashboard', label: '대시보드', icon: 'i-heroicons-home' },
+  { to: '/announcements', label: '공지사항', icon: 'i-heroicons-megaphone' },
   { to: '/species', label: '종 관리', icon: 'i-heroicons-beaker' },
   { to: '/taxonomy', label: '분류 트리', icon: 'i-heroicons-rectangle-group' },
   { to: '/users', label: '사용자 관리', icon: 'i-heroicons-users' },

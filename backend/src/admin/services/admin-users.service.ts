@@ -18,15 +18,21 @@ export class AdminUsersService {
     }
 
     // 일반 페이지네이션 (이메일 검색 없음)
-    const { data: authData, error: authError } =
-      await this.supabaseService.getAdminAuth().listUsers({
+    const { data: authData, error: authError } = await this.supabaseService
+      .getAdminAuth()
+      .listUsers({
         page,
         perPage: limit,
       });
 
     if (authError) throw new Error(authError.message);
 
-    return this.buildResult(authData.users, page, limit, (authData as any).total ?? 0);
+    return this.buildResult(
+      authData.users,
+      page,
+      limit,
+      (authData as any).total ?? 0,
+    );
   }
 
   /** 이메일 검색: 전체 사용자 fetch 후 in-memory 필터 + 페이지네이션 */
@@ -86,12 +92,10 @@ export class AdminUsersService {
           .in('id', userIds)
       : { data: [] };
 
-    const profileMap = new Map(
-      (profiles ?? []).map((p: any) => [p.id, p]),
-    );
+    const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
 
     const result = users.map((u) => {
-      const profile = profileMap.get(u.id) as any;
+      const profile = profileMap.get(u.id);
       return {
         id: u.id,
         email: u.email,

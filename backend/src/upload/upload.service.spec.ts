@@ -3,7 +3,9 @@ import { BadRequestException } from '@nestjs/common';
 import { UploadService } from './upload.service';
 import { SupabaseService } from '@config/supabase.service';
 
-const makeFile = (overrides: Partial<Express.Multer.File> = {}): Express.Multer.File => ({
+const makeFile = (
+  overrides: Partial<Express.Multer.File> = {},
+): Express.Multer.File => ({
   fieldname: 'file',
   originalname: 'test.jpg',
   encoding: '7bit',
@@ -27,9 +29,9 @@ describe('UploadService', () => {
   beforeEach(async () => {
     mockStorageBucket = {
       upload: jest.fn().mockResolvedValue({ error: null }),
-      getPublicUrl: jest
-        .fn()
-        .mockReturnValue({ data: { publicUrl: 'https://cdn.example.com/test.jpg' } }),
+      getPublicUrl: jest.fn().mockReturnValue({
+        data: { publicUrl: 'https://cdn.example.com/test.jpg' },
+      }),
     };
 
     const mockSupabaseClient = {
@@ -58,47 +60,67 @@ describe('UploadService', () => {
     it('5MB 초과 파일 → BadRequestException', async () => {
       const bigFile = makeFile({ size: 6 * 1024 * 1024 }); // 6MB
 
-      await expect(service.uploadProfileImage(bigFile, 'user1')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.uploadProfileImage(bigFile, 'user1'),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('5MB 초과 파일 → 오류 메시지 포함', async () => {
       const bigFile = makeFile({ size: 6 * 1024 * 1024 });
 
-      await expect(service.uploadProfileImage(bigFile, 'user1')).rejects.toThrow(
-        '5MB',
-      );
+      await expect(
+        service.uploadProfileImage(bigFile, 'user1'),
+      ).rejects.toThrow('5MB');
     });
 
     it('정확히 5MB → 통과', async () => {
       const exactFile = makeFile({ size: 5 * 1024 * 1024 });
-      await expect(service.uploadProfileImage(exactFile, 'user1')).resolves.toBeTruthy();
+      await expect(
+        service.uploadProfileImage(exactFile, 'user1'),
+      ).resolves.toBeTruthy();
     });
   });
 
   describe('validateFile — MIME type', () => {
     it('미지원 MIME type (image/gif) → BadRequestException', async () => {
-      const gifFile = makeFile({ mimetype: 'image/gif', originalname: 'test.gif' });
+      const gifFile = makeFile({
+        mimetype: 'image/gif',
+        originalname: 'test.gif',
+      });
 
-      await expect(service.uploadProfileImage(gifFile, 'user1')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.uploadProfileImage(gifFile, 'user1'),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('지원 MIME type (image/png) → 통과', async () => {
-      const pngFile = makeFile({ mimetype: 'image/png', originalname: 'test.png' });
-      await expect(service.uploadProfileImage(pngFile, 'user1')).resolves.toBeTruthy();
+      const pngFile = makeFile({
+        mimetype: 'image/png',
+        originalname: 'test.png',
+      });
+      await expect(
+        service.uploadProfileImage(pngFile, 'user1'),
+      ).resolves.toBeTruthy();
     });
 
     it('지원 MIME type (image/webp) → 통과', async () => {
-      const webpFile = makeFile({ mimetype: 'image/webp', originalname: 'test.webp' });
-      await expect(service.uploadProfileImage(webpFile, 'user1')).resolves.toBeTruthy();
+      const webpFile = makeFile({
+        mimetype: 'image/webp',
+        originalname: 'test.webp',
+      });
+      await expect(
+        service.uploadProfileImage(webpFile, 'user1'),
+      ).resolves.toBeTruthy();
     });
 
     it('지원 MIME type (image/heic) → 통과', async () => {
-      const heicFile = makeFile({ mimetype: 'image/heic', originalname: 'test.heic' });
-      await expect(service.uploadProfileImage(heicFile, 'user1')).resolves.toBeTruthy();
+      const heicFile = makeFile({
+        mimetype: 'image/heic',
+        originalname: 'test.heic',
+      });
+      await expect(
+        service.uploadProfileImage(heicFile, 'user1'),
+      ).resolves.toBeTruthy();
     });
   });
 
@@ -149,7 +171,9 @@ describe('UploadService', () => {
     it('4개 이상 파일 → "최대 3개" 메시지 포함', async () => {
       const files = Array.from({ length: 4 }, () => makeFile());
 
-      await expect(service.uploadCareLogImages(files, 'user1')).rejects.toThrow('최대 3개');
+      await expect(service.uploadCareLogImages(files, 'user1')).rejects.toThrow(
+        '최대 3개',
+      );
     });
 
     it('3개 이하 파일 → URL 배열 반환', async () => {
