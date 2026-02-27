@@ -56,6 +56,11 @@ const open = ref(true)
 const saving = ref(false)
 const isEdit = computed(() => !!props.node)
 
+// backdrop 클릭으로 모달이 닫힐 때 부모에게 알림
+watch(open, (val) => {
+  if (!val) emit('close')
+})
+
 const form = reactive({ name_kr: '', name_en: '', code: '' })
 
 const typeLabels: Record<NodeType, string> = { class: '강', order: '목', family: '과', genus: '속' }

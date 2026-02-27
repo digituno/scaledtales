@@ -40,7 +40,7 @@
         <template #role-data="{ row }">
           <UBadge
             :label="roleLabelMap[row.role] ?? row.role"
-            :color="roleColorMap[row.role] ?? 'gray'"
+            :color="(roleColorMap[row.role] ?? 'gray') as any"
             variant="soft"
             size="sm"
           />

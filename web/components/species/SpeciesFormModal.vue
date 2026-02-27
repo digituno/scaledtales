@@ -133,6 +133,11 @@ const open = ref(true)
 const saving = ref(false)
 const isEdit = computed(() => !!props.species)
 
+// backdrop 클릭으로 모달이 닫힐 때 부모에게 알림
+watch(open, (val) => {
+  if (!val) emit('close')
+})
+
 // 분류 계층 데이터
 const taxonomyTree = ref<any[]>([])
 const selectedClassId = ref('')

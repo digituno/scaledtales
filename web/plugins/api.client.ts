@@ -7,10 +7,9 @@ export default defineNuxtPlugin(() => {
     async onRequest({ options }) {
       const session = authStore.session
       if (session?.access_token) {
-        options.headers = {
-          ...options.headers,
-          Authorization: `Bearer ${session.access_token}`,
-        }
+        const headers = new Headers(options.headers as HeadersInit | undefined)
+        headers.set('Authorization', `Bearer ${session.access_token}`)
+        options.headers = headers
       }
     },
     async onResponseError({ response }) {
